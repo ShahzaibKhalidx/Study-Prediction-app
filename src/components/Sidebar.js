@@ -41,7 +41,7 @@ export default function Sidebar() {
     { href: '/predict', label: 'Predict', icon: Brain },
     { href: '/visualization', label: 'Visualization', icon: BarChart },
     { href: '/analysis', label: 'Analysis', icon: FileText },
-    { href: '/improvement', label: 'Improvement', icon: FileText },
+    { href: '/improvement?studentId=1', label: 'Improvement', icon: FileText },
   ];
 
   return (
