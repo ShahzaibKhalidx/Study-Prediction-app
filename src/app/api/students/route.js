@@ -1,24 +1,25 @@
-import { supabase } from '../../../lib/supabase';
 import { NextResponse } from 'next/server';
+import { createServerClient } from '../../../lib/supabase';
 
-export async function GET() {
+export async function GET(request) {
+  console.log('Received GET request to /api/students');
+
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const supabase = createServerClient(request);
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data, error } = await supabase
-      .from('students')
-      .select('*')
-      .eq('user_id', user.id);
-
+    const { data, error } = await supabase.from('students').select('*').eq('user_id', user.id);
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Fetch students error:', error);
+      return NextResponse.json({ error: 'Failed to fetch students: ' + error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json({ data });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Students API error:', error);
+    return NextResponse.json({ error: 'Error fetching students: ' + error.message }, { status: 500 });
   }
 }
