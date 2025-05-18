@@ -40,7 +40,7 @@ export default function Login() {
   };
 
   return (
-    <Card className="max-w-md mx-auto">
+    <Card className="max-w-md mx-auto mt-20 p-6 shadow-lg">
       <CardHeader>
         <CardTitle>Login</CardTitle>
       </CardHeader>
@@ -56,6 +56,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              className={'mt-2'}
             />
           </div>
           <div>
@@ -67,6 +68,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
+              className={'mt-2'}
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>

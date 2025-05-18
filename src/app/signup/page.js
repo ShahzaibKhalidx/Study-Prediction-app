@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [phone, setphone] = useState('');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,12 +24,28 @@ export default function Signup() {
     setSuccess(null);
     setLoading(true);
 
+    // Basic validation
+    if (!displayName.trim()) {
+      setError('Display name is required');
+      setLoading(false);
+      return;
+    }
+    if (phone && !/^\+?\d{1,4}[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/.test(phone)) {
+      setError('Invalid phone number format (e.g., +1-123-456-7890)');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            displayName,
+            phone: phone || null, // Store as null if empty
+          },
         },
       });
 
@@ -44,14 +62,27 @@ export default function Signup() {
   };
 
   return (
-    <Card className="max-w-md mx-auto">
+    <Card className="max-w-md mx-auto mt-8">
       <CardHeader>
         <CardTitle>Signup</CardTitle>
       </CardHeader>
       <CardContent>
         {error && <p className="text-destructive mb-4">{error}</p>}
         {success && <p className="text-green-500 mb-4">{success}</p>}
-        <form onSubmit={handleSignup} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-6">
+          <div>
+            <Label htmlFor="displayName">Display Name</Label>
+            <Input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+              disabled={loading}
+              placeholder="Enter your name"
+              className={'mt-2'}
+            />
+          </div>
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -61,6 +92,8 @@ export default function Signup() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              placeholder="Enter your email"
+              className={'mt-2'}
             />
           </div>
           <div>
@@ -72,6 +105,20 @@ export default function Signup() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
+              placeholder="Enter your password"
+              className={'mt-2'}
+            />
+          </div>
+          <div>
+            <Label htmlFor="phone">Phone Number (Optional)</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setphone(e.target.value)}
+              disabled={loading}
+              placeholder="Enter phone number (e.g., +92-123-456-7890)"
+              className={'mt-2'}
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
