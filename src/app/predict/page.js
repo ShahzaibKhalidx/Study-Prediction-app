@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
+import { useState } from 'react';
 import Script from 'next/script';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -16,27 +14,11 @@ export default function Predict() {
     internet_access: true,
     sleep_hours: 7,
     sports_participation: true,
-    math_score: 80,
-    science_score: 80,
-    computer_score: 80,
-    english_score: 80,
-    urdu_score: 80,
-    history_score: 80,
   });
   const [prediction, setPrediction] = useState(null);
   const [error, setError] = useState(null);
   const [pyodide, setPyodide] = useState(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login');
-      }
-    };
-    checkUser();
-  }, [router]);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -48,6 +30,10 @@ export default function Predict() {
 
   const runPrediction = async () => {
     if (!pyodide) return;
+
+    setLoading(true);
+    setError(null);
+    setPrediction(null);
 
     try {
       const coefficients = [0.11198438, 0.0, 0.0, 0.05257882, 0.0];
@@ -69,9 +55,12 @@ export default function Predict() {
       `);
 
       const result = pyodide.globals.get('prediction') * 100;
-      setPrediction(result.toFixed(2));
+      const clampedResult = Math.min(Math.max(result.toFixed(2), 0), 100);
+      setPrediction(clampedResult);
     } catch (err) {
       setError('Prediction failed: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,23 +69,40 @@ export default function Predict() {
       <Script
         src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
         onLoad={async () => {
-          if (typeof loadPyodide === 'function') {
-            const pyodideInstance = await loadPyodide();
-            await pyodideInstance.loadPackage('numpy');
-            setPyodide(pyodideInstance);
-          } else {
-            setError('Pyodide failed to load');
-          }
+          const pyodideInstance = await loadPyodide();
+          await pyodideInstance.loadPackage('numpy');
+          setPyodide(pyodideInstance);
         }}
       />
-      <Card className="max-w-md mx-auto">
+      <Card className="max-w-md mx-auto mt-4">
         <CardHeader>
           <CardTitle>Predict Performance</CardTitle>
         </CardHeader>
         <CardContent>
           {error && <p className="text-destructive mb-4">{error}</p>}
-          {prediction && (
-            <p className="text-green-500 mb-4">Predicted Score: {prediction}%</p>
+          {prediction !== null && (
+            <div className="text-center mb-4">
+              <h3 className="text-2xl font-bold text-green-600">
+                Predicted Score: {prediction}%
+              </h3>
+              <p className="text-sm text-gray-600">Based on your input values</p>
+            </div>
+          )}
+          {prediction !== null && (
+            <div className="flex justify-center mb-6">
+              <canvas data-type="gauge" data-config='{
+                "value": ${prediction},
+                "maxValue": 100,
+                "minValue": 0,
+                "majorTicks": [0, 20, 40, 60, 80, 100],
+                "minorTicks": 4,
+                "colors": {
+                  "needle": "#000000",
+                  "arc": ["#FF0000", "#FFFF00", "#00FF00"]
+                },
+                "label": "Score (%)"
+              }'></canvas>
+            </div>
           )}
           <form
             onSubmit={(e) => {
@@ -169,86 +175,8 @@ export default function Predict() {
                 Sports Participation
               </Label>
             </div>
-            <div>
-              <Label htmlFor="math_score">Math Score</Label>
-              <Input
-                id="math_score"
-                type="number"
-                name="math_score"
-                value={formData.math_score}
-                onChange={handleInputChange}
-                min="0"
-                max="100"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="science_score">Science Score</Label>
-              <Input
-                id="science_score"
-                type="number"
-                name="science_score"
-                value={formData.science_score}
-                onChange={handleInputChange}
-                min="0"
-                max="100"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="computer_score">Computer Score</Label>
-              <Input
-                id="computer_score"
-                type="number"
-                name="computer_score"
-                value={formData.computer_score}
-                onChange={handleInputChange}
-                min="0"
-                max="100"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="english_score">English Score</Label>
-              <Input
-                id="english_score"
-                type="number"
-                name="english_score"
-                value={formData.english_score}
-                onChange={handleInputChange}
-                min="0"
-                max="100"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="urdu_score">Urdu Score</Label>
-              <Input
-                id="urdu_score"
-                type="number"
-                name="urdu_score"
-                value={formData.urdu_score}
-                onChange={handleInputChange}
-                min="0"
-                max="100"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="history_score">History Score</Label>
-              <Input
-                id="history_score"
-                type="number"
-                name="history_score"
-                value={formData.history_score}
-                onChange={handleInputChange}
-                min="0"
-                max="100"
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full">
-              Predict
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Predicting...' : 'Predict'}
             </Button>
           </form>
         </CardContent>

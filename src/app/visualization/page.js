@@ -98,7 +98,7 @@ export default function Visualization() {
   };
 
   return (
-    <Card>
+    <Card className="max-w-4xl mx-auto mt-4">
       <CardHeader>
         <CardTitle>Visualizations</CardTitle>
       </CardHeader>
@@ -122,8 +122,8 @@ export default function Visualization() {
           </Select>
         </div>
         {selectedStudent && (
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-2">Subject Scores</h3>
+          <div className="mb-8 border rounded-md m-2">
+            <h3 className="text-lg font-semibold m-4">Subject Scores</h3>
             <Bar
               data={barData}
               options={{
