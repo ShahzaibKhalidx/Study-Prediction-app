@@ -12,7 +12,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [phone, setphone] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -61,6 +61,26 @@ export default function Signup() {
     }
   };
 
+  const signUpWithGoogle = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (error) {
+      setError('Google signup failed: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card className="max-w-md mx-auto mt-8">
       <CardHeader>
@@ -80,7 +100,7 @@ export default function Signup() {
               required
               disabled={loading}
               placeholder="Enter your name"
-              className={'mt-2'}
+              className="mt-2"
             />
           </div>
           <div>
@@ -93,7 +113,7 @@ export default function Signup() {
               required
               disabled={loading}
               placeholder="Enter your email"
-              className={'mt-2'}
+              className="mt-2"
             />
           </div>
           <div>
@@ -106,7 +126,7 @@ export default function Signup() {
               required
               disabled={loading}
               placeholder="Enter your password"
-              className={'mt-2'}
+              className="mt-2"
             />
           </div>
           <div>
@@ -115,16 +135,21 @@ export default function Signup() {
               id="phone"
               type="tel"
               value={phone}
-              onChange={(e) => setphone(e.target.value)}
+              onChange={(e) => setPhone(e.target.value)}
               disabled={loading}
               placeholder="Enter phone number (e.g., +92-123-456-7890)"
-              className={'mt-2'}
+              className="mt-2"
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing up...' : 'Signup'}
           </Button>
         </form>
+        <div className="mt-4 text-center">
+          <Button onClick={signUpWithGoogle} className="w-full" disabled={loading}>
+            {loading ? 'Signing up...' : 'Sign up with Google'}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
