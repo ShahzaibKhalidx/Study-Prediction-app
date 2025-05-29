@@ -10,8 +10,9 @@ export default function Home() {
       <section className="py-20 text-center">
         <div className="container mx-auto px-4">
           <h1 className="text-5xl font-bold text-foreground mb-4">
-            FamsEdu
+            Education Prediction Tool
           </h1>
+          {/* <img src="/logo.png" alt="Logo" className="text-5xl mx-auto mb-4" /> */}
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             A cutting-edge tool to analyze student performance, predict outcomes, and create personalized improvement plans.
           </p>

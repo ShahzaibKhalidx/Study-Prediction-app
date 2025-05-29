@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
@@ -21,7 +21,25 @@ import {
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+    };
+    checkAuth();
+
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -40,8 +58,7 @@ export default function Sidebar() {
     { href: '/students', label: 'Students', icon: Users },
     { href: '/predict', label: 'Predict', icon: Brain },
     { href: '/visualization', label: 'Visualization', icon: BarChart },
-    { href: '/analysis', label: 'Analysis', icon: FileText },
-    { href: '/improvement?studentId=1', label: 'Improvement', icon: FileText },
+    { href: '/improvement', label: 'Improvement', icon: FileText },
   ];
 
   return (
@@ -62,13 +79,14 @@ export default function Sidebar() {
         } md:w-64 z-40`}
       >
         <div className="mb-8 flex items-center space-x-2">
-          <span className="text-2xl font-bold text-primary">EduPredict</span>
+          <img src="/logo.png" alt="EduPredict Logo" className="h-10" />
+          <span className="text-2xl font-bold text-primary"></span>
         </div>
         <nav className="flex flex-col space-y-1 flex-grow">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href}>
               <Button
-                variant="ghost"
+                variant="dafault"
                 className="w-full justify-start text-muted-foreground hover:text-primary hover:bg-primary/10"
               >
                 <link.icon className="mr-2 h-4 w-4" />
@@ -77,14 +95,16 @@ export default function Sidebar() {
             </Link>
           ))}
         </nav>
-        <Button
-          variant="destructive"
-          onClick={handleLogout}
-          className="mt-auto flex items-center"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </Button>
+        {isAuthenticated && (
+          <Button
+            variant="destructive"
+            onClick={handleLogout}
+            className="mt-auto flex items-center"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        )}
       </Card>
 
       {/* Overlay for mobile when sidebar is open */}
