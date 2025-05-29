@@ -204,7 +204,7 @@ export default function ImprovementPage() {
                     <div>
                       <h3 className="text-lg font-semibold mb-2">Student Details</h3>
                       <p><strong>Name:</strong> {improvementData.student_name}</p>
-                      
+                      <p><strong>Current Score:</strong> {improvementData.current_score}%</p>
                       {predictedScore && (
                         <p><strong>Predicted Score:</strong> {predictedScore}%</p>
                       )}
@@ -305,7 +305,7 @@ export default function ImprovementPage() {
               </Tabs>
             ) : (
               <p className="text-center text-muted-foreground mt-4">
-                Click "Generate Report" to view the improvement report for the selected student.
+                Click {"\""}Generate Report{"\""} to view the improvement report for the selected student.
               </p>
             )}
           </>
