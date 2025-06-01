@@ -7,6 +7,7 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { supabase } from '../../lib/supabase';
+import * as XLSX from 'xlsx';
 
 export default function Upload() {
   const [file, setFile] = useState(null);
@@ -87,6 +88,21 @@ export default function Upload() {
     'Private_Tuition', 'Internet_Access', 'Sleep_Hours', 'Sports_Participation',
   ];
 
+  const downloadTemplate = () => {
+    // Create a worksheet with the required columns
+    const wsData = [
+      requiredColumns, // Headers
+      // Sample row for guidance
+      [
+        '123', 'M Shahzaib', 'M', 18, 85, 5, 'B', 80, 85, 90, 88, 82, 84, 86, 15, 'Yes', 'Yes', 7, 'Yes'
+      ]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+    XLSX.writeFile(wb, 'EduPredict_Template.xlsx');
+  };
+
   return (
     <Card className="max-w-md mx-auto">
       <CardHeader>
@@ -107,6 +123,9 @@ export default function Upload() {
           </div>
           <Button type="submit" className="w-full">
             Upload
+          </Button>
+          <Button type="button" variant="outline" className="flex-1" onClick={downloadTemplate}>
+            Download Template
           </Button>
         </form>
         <p className="mt-4 text-sm text-muted-foreground">
